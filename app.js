@@ -1751,7 +1751,12 @@
   DOM.themeToggle.addEventListener('click', toggleTheme);
 
   // Hamburger
-  DOM.hamburger.addEventListener('click', () => DOM.sidebar.classList.toggle('open'));
+  DOM.hamburger.addEventListener('click', (e) => { e.stopPropagation(); DOM.sidebar.classList.toggle('open'); });
+  document.addEventListener('click', (e) => {
+    if (DOM.sidebar.classList.contains('open') && !DOM.sidebar.contains(e.target) && e.target !== DOM.hamburger) {
+      DOM.sidebar.classList.remove('open');
+    }
+  });
 
   // Modals
   DOM.modalClose.addEventListener('click', () => { DOM.modalOverlay.classList.remove('open'); editingId = null; });
