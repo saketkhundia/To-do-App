@@ -4,6 +4,8 @@
 
 /* Reset & Base */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none}
 html{font-size:16px;scroll-behavior:smooth}
 body{font-family:'Inter',system-ui,sans-serif;display:flex;min-height:100vh;overflow-x:hidden;transition:background .4s,color .4s}
 
