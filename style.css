@@ -478,17 +478,89 @@ body{background:var(--bg);color:var(--text)}
 /* ==================== RESPONSIVE ==================== */
 @media(max-width:1024px){
   .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .main{margin-left:0}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.15)}
+  .main{margin-left:0;padding:20px 24px 80px}
   .hamburger{display:block}
+  /* Overlay behind sidebar on tablet */
+  .sidebar.open~.main::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:50}
 }
 @media(max-width:768px){
   .board-view{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:repeat(4,1fr)}
-  .main{padding:16px}
+  .stats-row{grid-template-columns:repeat(3,1fr);gap:8px}
+  .main{padding:14px 16px 80px}
+  .page-head{flex-direction:column;gap:4px;margin-bottom:14px}
+  .page-title{font-size:1.3rem}
+  .main-header{flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .search-wrap{width:100%;order:3}
+  .header-right{gap:6px}
+  .add-row{flex-direction:column}
+  .add-row input[type="text"]{width:100%}
+  .add-btn,.burner-btn{width:100%;text-align:center}
+  .add-options{flex-direction:row;flex-wrap:wrap}
+  .add-options select,.add-options input{flex:1;min-width:0}
+  .pomo-strip{flex-direction:column;text-align:center;gap:8px;padding:10px 12px}
+  .pomo-left{justify-content:center}
+  .pomo-right{justify-content:center}
+  .stat-card{padding:10px 8px}
+  .stat-num{font-size:1.2rem}
+  .stat-label{font-size:.6rem}
+  .task-item{padding:12px;gap:10px}
+  .task-actions{opacity:1}
+  .burndown-panel{padding:12px}
+  .bd-header{flex-direction:column;align-items:flex-start;gap:6px}
+  .ifttt-row{flex-direction:column;align-items:stretch}
+  .ifttt-row label{width:auto}
+  .win-item{flex-wrap:wrap;gap:8px;padding:10px 12px}
+  .modal{max-width:100%;margin:10px;border-radius:var(--radius)}
+  .modal-header{padding:14px 16px}
+  .modal-body{padding:14px 16px}
+  .modal-footer{padding:10px 16px}
+  .auth-card{padding:28px 20px;margin:10px}
+  .auth-brand{font-size:1.5rem}
+  .profile-avatar-section{flex-direction:column;text-align:center}
+  .profile-stats{grid-template-columns:repeat(2,1fr)}
+  .deep-work-bar{padding:8px 12px}
+  .dedup-banner{flex-direction:column;gap:8px;text-align:center}
+  .swap-modal{max-width:100%}
+  .report-modal{max-width:100%}
+  .toast{max-width:280px}
+  .toast-container{top:12px;right:12px}
+  .ifttt-fab{bottom:18px;right:18px;width:46px;height:46px}
+  .undo-bar{font-size:.8rem;padding:8px 14px;width:calc(100% - 32px);max-width:360px}
 }
 @media(max-width:480px){
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-  .add-options{flex-direction:column}
-  .pomo-strip{flex-direction:column;text-align:center}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:6px}
+  .main{padding:10px 12px 80px}
+  .page-title{font-size:1.15rem}
+  .page-date{font-size:.72rem}
+  .task-title{font-size:.84rem}
+  .task-meta{gap:4px}
+  .task-badge{font-size:.6rem;padding:2px 6px}
+  .task-check{width:18px;height:18px}
+  .task-act-btn{font-size:.78rem}
+  .stat-card{padding:8px 6px}
+  .stat-num{font-size:1rem}
+  .pomo-time{font-size:1.2rem}
+  .add-options select,.add-options input{font-size:.72rem;padding:6px 8px}
+  .auth-card{padding:24px 16px}
+  .auth-tabs{flex-direction:row}
+  .auth-tab{padding:8px;font-size:.8rem}
+  .auth-field input{padding:9px 12px;font-size:.85rem}
+  .auth-submit{padding:10px;font-size:.85rem}
+  .sidebar{width:85vw;max-width:300px;padding:20px 14px;gap:16px}
+  .sb-logo-text{font-size:1.1rem}
+  .sb-nav-btn{padding:7px 10px;font-size:.78rem}
+  .sb-cat-btn{font-size:.75rem;padding:5px 10px}
+  .profile-modal .modal-body{padding:12px 14px}
+  .view-switch{display:none}
+  .header-right .sort-select{font-size:.72rem;padding:5px 8px}
+  .ifttt-fab{bottom:14px;right:14px;width:42px;height:42px}
+  .ifttt-fab svg{width:18px;height:18px}
+}
+@media(max-width:360px){
+  .stats-row{grid-template-columns:1fr 1fr;gap:4px}
+  .main{padding:8px 10px 80px}
+  .auth-card{padding:20px 14px}
+  .auth-brand{font-size:1.3rem}
+  .sidebar{width:90vw;padding:16px 12px}
 }
