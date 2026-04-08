@@ -185,7 +185,18 @@
     changePasswordBtn: document.getElementById('changePasswordBtn'),
     profileError: document.getElementById('profileError'),
     deleteAccountBtn: document.getElementById('deleteAccountBtn'),
-    profileSave: document.getElementById('profileSave')
+    profileSave: document.getElementById('profileSave'),
+    // Reminders
+    openReminders: document.getElementById('openReminders'),
+    reminderNext: document.getElementById('reminderNext'),
+    reminderOverlay: document.getElementById('reminderOverlay'),
+    reminderClose: document.getElementById('reminderClose'),
+    reminderTime: document.getElementById('reminderTime'),
+    reminderRepeat: document.getElementById('reminderRepeat'),
+    reminderLabel: document.getElementById('reminderLabel'),
+    addReminderBtn: document.getElementById('addReminderBtn'),
+    reminderList: document.getElementById('reminderList'),
+    reminderPermission: document.getElementById('reminderPermission')
   };
 
   /* ============ STATE ============ */
@@ -205,6 +216,8 @@
   let pendingTask = null;
   let userProfile = { name: '', bio: '', job: '', location: '', workGoal: 480, avatarUrl: '' };
   let isAnonymous = false;
+  let reminders = [];
+  let reminderTimers = [];
 
   // Pomodoro
   let pomoMode = 'pomo';
@@ -1632,6 +1645,20 @@
     DOM.pomoStart.textContent = 'Start';
   }
 
+  /* ============ REMINDER EVENT LISTENERS ============ */
+  DOM.openReminders.addEventListener('click', () => {
+    renderReminders();
+    if ('Notification' in window && Notification.permission === 'denied') {
+      DOM.reminderPermission.style.display = 'flex';
+    } else {
+      DOM.reminderPermission.style.display = 'none';
+    }
+    DOM.reminderOverlay.classList.add('open');
+  });
+  DOM.reminderClose.addEventListener('click', () => DOM.reminderOverlay.classList.remove('open'));
+  DOM.reminderOverlay.addEventListener('click', e => { if (e.target === DOM.reminderOverlay) DOM.reminderOverlay.classList.remove('open'); });
+  DOM.addReminderBtn.addEventListener('click', addReminder);
+
   /* ============ AUTH & PROFILE EVENT LISTENERS ============ */
   // Auth tabs
   DOM.authTabs.querySelectorAll('.auth-tab').forEach(tab => {
@@ -1837,6 +1864,227 @@
       editingId = null;
     }
   });
+
+  /* ============ SMART REMINDERS ============ */
+  const aiMessages = [
+    "Time to crush it! Your future self will thank you. 💪",
+    "Small steps lead to big wins. Let's knock out a task! 🚀",
+    "Hey {name}, your tasks are waiting. You've got this! ✨",
+    "Focus mode: ON. Let's make this session count! 🎯",
+    "Your streak is {streak} days strong. Don't break the chain! 🔥",
+    "You've completed {done} tasks so far. Keep the momentum! ⚡",
+    "The best time to start was yesterday. The next best time is now. 🌅",
+    "{name}, take a deep breath and tackle the next task! 🧘",
+    "Productivity tip: Start with the easiest task to build momentum. 🏃",
+    "Remember why you started. You're closer than you think! 🌟",
+    "Just 25 minutes of focus can change your day. Try a Pomodoro! 🍅",
+    "Your tasks aren't going to complete themselves — but you can! 💥",
+    "Discipline is choosing between what you want now and what you want most. 🎖️",
+    "You've got {pending} tasks remaining today. Let's chip away at them! 📋",
+    "Tiny progress is still progress. Let's go, {name}! 🐢➡️🐇"
+  ];
+
+  function getAIMessage() {
+    const msg = aiMessages[Math.floor(Math.random() * aiMessages.length)];
+    const name = userProfile.name ? userProfile.name.split(' ')[0] : 'there';
+    const done = tasks.filter(t => t.done).length;
+    const pending = tasks.filter(t => !t.done).length;
+    return msg
+      .replace('{name}', name)
+      .replace('{streak}', completionStreak)
+      .replace('{done}', done)
+      .replace('{pending}', pending);
+  }
+
+  function sendReminderNotification(reminder) {
+    const message = getAIMessage();
+    const title = reminder.label || 'Solaris Reminder';
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notif = new Notification(title, {
+        body: message,
+        icon: 'favicon.svg',
+        badge: 'favicon.svg',
+        tag: 'solaris-reminder-' + reminder.id,
+        requireInteraction: true
+      });
+      notif.onclick = () => { window.focus(); notif.close(); };
+    }
+
+    // Also show in-app toast
+    toast('🔔 ' + message);
+  }
+
+  function scheduleReminder(reminder) {
+    if (!reminder.enabled) return null;
+
+    const now = new Date();
+    const [hours, minutes] = reminder.time.split(':').map(Number);
+    const target = new Date();
+    target.setHours(hours, minutes, 0, 0);
+
+    // If time already passed today, schedule for tomorrow
+    if (target <= now) target.setDate(target.getDate() + 1);
+
+    // Check day-of-week filter
+    const day = target.getDay();
+    if (reminder.repeat === 'weekdays' && (day === 0 || day === 6)) {
+      // Skip to Monday
+      target.setDate(target.getDate() + (day === 0 ? 1 : 2));
+    } else if (reminder.repeat === 'weekends' && day !== 0 && day !== 6) {
+      // Skip to Saturday
+      target.setDate(target.getDate() + (6 - day));
+    }
+
+    const ms = target - now;
+    const timerId = setTimeout(() => {
+      sendReminderNotification(reminder);
+      // Reschedule if recurring
+      if (reminder.repeat !== 'once') {
+        scheduleReminder(reminder);
+      } else {
+        reminder.enabled = false;
+        saveReminders();
+        renderReminders();
+      }
+    }, ms);
+
+    return timerId;
+  }
+
+  function scheduleAllReminders() {
+    // Clear existing timers
+    reminderTimers.forEach(t => clearTimeout(t));
+    reminderTimers = [];
+    // Schedule each enabled reminder
+    reminders.forEach(r => {
+      if (r.enabled) {
+        const t = scheduleReminder(r);
+        if (t) reminderTimers.push(t);
+      }
+    });
+    updateReminderNextUI();
+  }
+
+  function updateReminderNextUI() {
+    const enabled = reminders.filter(r => r.enabled);
+    if (enabled.length === 0) {
+      DOM.reminderNext.textContent = 'No reminders set';
+      return;
+    }
+    // Find next upcoming
+    const now = new Date();
+    let nearest = null;
+    let nearestMs = Infinity;
+    enabled.forEach(r => {
+      const [h, m] = r.time.split(':').map(Number);
+      const t = new Date();
+      t.setHours(h, m, 0, 0);
+      if (t <= now) t.setDate(t.getDate() + 1);
+      const diff = t - now;
+      if (diff < nearestMs) { nearestMs = diff; nearest = r; }
+    });
+    if (nearest) {
+      DOM.reminderNext.textContent = '⏰ Next: ' + nearest.time + (nearest.label ? ' — ' + nearest.label : '');
+    }
+  }
+
+  function addReminder() {
+    const time = DOM.reminderTime.value;
+    if (!time) { toast('Please select a time.'); return; }
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(p => {
+        if (p === 'denied') DOM.reminderPermission.style.display = 'flex';
+      });
+    }
+    if ('Notification' in window && Notification.permission === 'denied') {
+      DOM.reminderPermission.style.display = 'flex';
+    }
+
+    const reminder = {
+      id: Date.now().toString(36),
+      time,
+      repeat: DOM.reminderRepeat.value,
+      label: DOM.reminderLabel.value.trim(),
+      enabled: true
+    };
+
+    reminders.push(reminder);
+    saveReminders();
+    renderReminders();
+    scheduleAllReminders();
+
+    // Reset inputs
+    DOM.reminderTime.value = '';
+    DOM.reminderLabel.value = '';
+    toast('Reminder set for ' + time);
+  }
+
+  function toggleReminder(id) {
+    const r = reminders.find(x => x.id === id);
+    if (r) { r.enabled = !r.enabled; saveReminders(); renderReminders(); scheduleAllReminders(); }
+  }
+
+  function deleteReminder(id) {
+    reminders = reminders.filter(x => x.id !== id);
+    saveReminders();
+    renderReminders();
+    scheduleAllReminders();
+  }
+
+  function renderReminders() {
+    if (reminders.length === 0) {
+      DOM.reminderList.innerHTML = '<div class="reminder-empty">No reminders yet. Add one above!</div>';
+      return;
+    }
+    DOM.reminderList.innerHTML = reminders.map(r => `
+      <div class="reminder-item">
+        <span class="ri-time">${r.time}</span>
+        <div class="ri-info">
+          <div class="ri-label">${r.label || 'Reminder'}</div>
+          <div class="ri-repeat">${r.repeat}</div>
+        </div>
+        <button class="ri-toggle ${r.enabled ? 'on' : 'off'}" data-rid="${r.id}"></button>
+        <button class="ri-delete" data-rid="${r.id}">✕</button>
+      </div>
+    `).join('');
+
+    DOM.reminderList.querySelectorAll('.ri-toggle').forEach(b => b.addEventListener('click', () => toggleReminder(b.dataset.rid)));
+    DOM.reminderList.querySelectorAll('.ri-delete').forEach(b => b.addEventListener('click', () => deleteReminder(b.dataset.rid)));
+    updateReminderNextUI();
+  }
+
+  function saveReminders() {
+    localStorage.setItem('solaris_reminders', JSON.stringify(reminders));
+    // Also save to Firebase if available
+    if (firebaseReady && userId && !isAnonymous) {
+      db.collection('users').doc(userId).collection('meta').doc('reminders').set({ items: reminders }, { merge: true }).catch(() => {});
+    }
+  }
+
+  function loadReminders() {
+    try {
+      const saved = localStorage.getItem('solaris_reminders');
+      if (saved) reminders = JSON.parse(saved);
+    } catch (e) { /* silent */ }
+    renderReminders();
+    scheduleAllReminders();
+  }
+
+  async function loadRemindersFromFirebase() {
+    if (!firebaseReady || !userId || isAnonymous) return;
+    try {
+      const doc = await db.collection('users').doc(userId).collection('meta').doc('reminders').get();
+      if (doc.exists && doc.data().items) {
+        reminders = doc.data().items;
+        localStorage.setItem('solaris_reminders', JSON.stringify(reminders));
+        renderReminders();
+        scheduleAllReminders();
+      }
+    } catch (e) { /* silent */ }
+  }
 
   /* ============ AUTH SCREEN ============ */
   function showAuthScreen() {
@@ -2159,6 +2407,8 @@
 
     initIFTTT();
     initEnvironment();
+    loadReminders();
+    loadRemindersFromFirebase();
 
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();

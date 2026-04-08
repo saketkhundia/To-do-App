@@ -466,6 +466,44 @@ body{background:var(--bg);color:var(--text)}
 .profile-pw-fields input{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
   background:var(--surface);font-size:.85rem;color:var(--text);font-family:inherit}
 
+/* ==================== SMART REMINDERS ==================== */
+.sb-reminders{display:flex;flex-direction:column;gap:6px}
+.sb-reminder-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--radius-sm);font-size:.82rem;color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s;width:100%}
+.sb-reminder-btn:hover{border-color:var(--accent);color:var(--accent)}
+.reminder-next{font-size:.7rem;color:var(--text-muted);padding:0 4px}
+
+.reminder-modal{max-width:500px}
+.reminder-desc{font-size:.82rem;color:var(--text-secondary);margin-bottom:4px}
+.reminder-add{display:flex;flex-direction:column;gap:6px}
+.reminder-add label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary)}
+.reminder-add-row{display:flex;gap:8px;align-items:center}
+.reminder-add-row input,.reminder-add-row select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);font-size:.85rem;color:var(--text);font-family:inherit}
+.reminder-add-row input[type="time"]{flex:1}
+.reminder-add-row select{min-width:110px}
+.reminder-add-row .add-btn{white-space:nowrap}
+
+.reminder-list-section{margin-top:8px}
+.reminder-list-section>label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary);display:block;margin-bottom:6px}
+.reminder-list{display:flex;flex-direction:column;gap:6px}
+.reminder-empty{text-align:center;color:var(--text-muted);font-size:.82rem;padding:20px}
+.reminder-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface-hover);border-radius:var(--radius-sm);animation:fadeUp .2s ease}
+.ri-time{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700;color:var(--accent);min-width:56px}
+.ri-info{flex:1;min-width:0}
+.ri-label{font-size:.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-repeat{font-size:.68rem;color:var(--text-muted);text-transform:capitalize}
+.ri-toggle{width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;transition:background .2s;position:relative;flex-shrink:0}
+.ri-toggle.on{background:var(--green)}
+.ri-toggle.off{background:var(--border-strong)}
+.ri-toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s}
+.ri-toggle.on::after{left:18px}
+.ri-delete{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:2px;flex-shrink:0}
+.ri-delete:hover{color:var(--red)}
+
+.reminder-permission{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--yellow-bg);border:1px solid var(--yellow);
+  border-radius:var(--radius-sm);font-size:.78rem;color:var(--text);margin-top:8px}
+
 /* ==================== ANIMATIONS ==================== */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeScale{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}

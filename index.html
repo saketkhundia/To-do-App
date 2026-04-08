@@ -219,6 +219,16 @@
       <div class="sb-cats-title">⚙️ Automations <span class="auto-count" id="autoCount">0</span></div>
       <div class="auto-status" id="autoStatus">No rules active</div>
     </div>
+
+    <!-- Smart Reminders -->
+    <div class="sb-reminders">
+      <div class="sb-cats-title">🔔 Smart Reminders</div>
+      <button class="sb-reminder-btn" id="openReminders">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Manage Reminders
+      </button>
+      <div class="reminder-next" id="reminderNext">No reminders set</div>
+    </div>
   </aside>
 
   <!-- ==================== MAIN ==================== -->
@@ -607,6 +617,50 @@
       <div class="modal-footer">
         <button class="modal-save secondary" id="deleteAccountBtn">Delete Account</button>
         <button class="modal-save" id="profileSave">Save Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REMINDERS MODAL ==================== -->
+  <div class="modal-overlay" id="reminderOverlay">
+    <div class="modal reminder-modal">
+      <div class="modal-header">
+        <h2>🔔 Smart Reminders</h2>
+        <button class="modal-close" id="reminderClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="reminder-desc">Set reminders and get AI-generated motivational notifications to stay on track.</p>
+
+        <!-- Add Reminder -->
+        <div class="reminder-add">
+          <label>Reminder Time</label>
+          <div class="reminder-add-row">
+            <input type="time" id="reminderTime" />
+            <select id="reminderRepeat">
+              <option value="daily">Daily</option>
+              <option value="weekdays">Weekdays</option>
+              <option value="weekends">Weekends</option>
+              <option value="once">Once</option>
+            </select>
+            <button class="add-btn" id="addReminderBtn">Add</button>
+          </div>
+          <label style="margin-top:8px">Custom label (optional)</label>
+          <input type="text" id="reminderLabel" placeholder="e.g. Morning focus session" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:.85rem" />
+        </div>
+
+        <!-- Active Reminders List -->
+        <div class="reminder-list-section">
+          <label>Active Reminders</label>
+          <div class="reminder-list" id="reminderList">
+            <div class="reminder-empty">No reminders yet. Add one above!</div>
+          </div>
+        </div>
+
+        <!-- Notification Permission -->
+        <div class="reminder-permission" id="reminderPermission" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Notifications are blocked. Please enable them in your browser settings.</span>
+        </div>
       </div>
     </div>
   </div>
